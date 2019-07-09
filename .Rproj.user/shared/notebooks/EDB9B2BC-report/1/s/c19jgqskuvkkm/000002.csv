@@ -1,3 +1,0 @@
-"0","speeddating <- read_csv(""../data/speed-dating2.csv"") %>% "
-"0","  mutate(dec = as.factor(dec), "
-"0","         gender = as.factor(gender))"

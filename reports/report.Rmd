@@ -13,21 +13,21 @@ library(broom)
 library(tidyverse)
 library(modelr) # devtools::install_github("hadley/modelr")
 
-#library(magick)
+library(magick)
 library(ggpubr)
 theme_set(theme_bw())
 ```
 
-O _speed dating_ é um modelo de encontros muito conhecido nos Estados Unidos. Nele,um grande grupo se divide em pares onde cada par tem de 3 a 10 minutos para se conhecer. Após o término desse tempo os pares são rotacionados e tudo se repete. A ideia é que no final alguns casais se formem e passem para um encontro mais demorado (e sem competições). Parece ser tudo simples, não é mesmo? O que poderia dar errado?
+O _speed dating_ é um modelo de encontros muito conhecido nos Estados Unidos. Nele, um grande grupo se divide em pares onde cada par tem 4 minutos para se conhecer. Após o término desse tempo os pares são rotacionados e tudo se repete. A ideia é que no final alguns casais se formem e passem para um encontro mais demorado (e sem competições). Parece ser tudo simples, não é mesmo? O que poderia dar errado?
 ```{r}
-#dating.img <- image_read("https://www.sltrib.com/resizer/IKzaM8Tui0iSyZXA07IGqGzDr6o=/970x0/filters:quality(100)/arc-anglerfish-arc2-prod-sltrib.s3.amazonaws.com/public/ZSSRJZWRQJETDMOJEDQEOQM2OI.jpg", "50")
-#plot(as.raster(dating.img))
+dating.img <- image_read("https://www.sltrib.com/resizer/IKzaM8Tui0iSyZXA07IGqGzDr6o=/970x0/filters:quality(100)/arc-anglerfish-arc2-prod-sltrib.s3.amazonaws.com/public/ZSSRJZWRQJETDMOJEDQEOQM2OI.jpg", "50")
+plot(as.raster(dating.img))
 ```
 
 
 ###Prazer, Speed Dating
 
-Nesse relatório temos dados de 5000 desses encontros coletados pelos professores da Columbia Business School. Os participantes tinham vários encontros de 4 minutos por noite. Após cada um, preenchiam fichas avaliando aqueles com quem se encontraram. Cada linha nos dados representa um desses encontros.
+Nesse relatório temos dados de quase 5000 desses encontros coletados pelos professores da Columbia Business School. Os participantes tinham vários encontros de 4 minutos por noite. Após cada um, preenchiam fichas avaliando aqueles com quem se encontraram. Cada linha nos dados representa um desses encontros.
 ```{r message = FALSE, warning = FALSE}
 speeddating <- read_csv("../data/speed-dating2.csv") %>% 
   mutate(dec = as.factor(dec), 
@@ -88,7 +88,7 @@ speeddating %>%
   scale_fill_discrete(labels = c('Feminino', 'Masculino'))
 ```
 
-E a raça:
+E por último a raça:
 ```{r}
 speeddating %>%
   group_by(race) %>%
@@ -104,7 +104,7 @@ Então, em maioria nossos dados falam sobre pessoas caucasianas e jovens. Seria 
 
 ### Será que é ele não?
 
-Estamos todos curiosos pra saber a fórmula do sucesso (aka modelo do match) e vamos colocar aqui nosso dedo na história. Dando uma olhada nos dados os atributos escolhidos e seus repectivos motivos:
+Estamos todos curiosos pra saber a fórmula do sucesso (aka modelo do match) e vamos colocar aqui nosso dedo na história. Após olhar os dados os atributos foram escolhidos e seus repectivos motivos são:
 
 - __order__: será que os últimos serão os primeiros (a conseguir um date)?
 - __attr__: achar uma pessoa atraente é motivo forte para eu desejar ter um encontro depois?
@@ -112,8 +112,8 @@ Estamos todos curiosos pra saber a fórmula do sucesso (aka modelo do match) e v
 - __fun__: aquela velha história de que se você fizer alguém rir, você já tá mais perto de conquistá-la...
 
 
-Dando uma olhada na correlação o que nos interessa mesmo é a relação dos atributos com o `dec`que é o resultado final.
-```{r message = FALSE}
+Observando na correlação o que nos interessa mesmo é a relação dos atributos com o `dec`que é o resultado final.
+```{r message = FALSE, warning = FALSE}
 speeddating.resume <- speeddating %>%
   select(order, attr, intel, fun, dec)
 ggpairs(speeddating.resume)
@@ -144,4 +144,4 @@ Ou seja, ser bonito e engraçado conta mais que ser inteligente e o primeiro da 
 pR2(speeddating.model)
 ```
 
-Avaliando o modelo com o R**2 de McFadden vemos que tudo que fizemos até agora explica apenas 26% dos nossos dados. Para quem se encaixa nos atributos, essa análise dá uma força na autoestima mas também temos boas notícias para os que não se sentiram agraciados.
+Avaliando o modelo com o R^2^ de McFadden vemos que tudo que fizemos até agora explica apenas 26% dos nossos dados. Para quem se encaixa nos atributos, essa análise dá uma força na autoestima mas também temos boas notícias para os que não se sentiram agraciados.
