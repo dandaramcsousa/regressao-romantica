@@ -13,15 +13,15 @@ library(broom)
 library(tidyverse)
 library(modelr) # devtools::install_github("hadley/modelr")
 
-library(magick)
+#library(magick)
 library(ggpubr)
 theme_set(theme_bw())
 ```
 
 O _speed dating_ é um modelo de encontros muito conhecido nos Estados Unidos. Nele,um grande grupo se divide em pares onde cada par tem de 3 a 10 minutos para se conhecer. Após o término desse tempo os pares são rotacionados e tudo se repete. A ideia é que no final alguns casais se formem e passem para um encontro mais demorado (e sem competições). Parece ser tudo simples, não é mesmo? O que poderia dar errado?
 ```{r}
-dating.img <- image_read("https://www.sltrib.com/resizer/IKzaM8Tui0iSyZXA07IGqGzDr6o=/970x0/filters:quality(100)/arc-anglerfish-arc2-prod-sltrib.s3.amazonaws.com/public/ZSSRJZWRQJETDMOJEDQEOQM2OI.jpg", "50")
-plot(as.raster(dating.img))
+#dating.img <- image_read("https://www.sltrib.com/resizer/IKzaM8Tui0iSyZXA07IGqGzDr6o=/970x0/filters:quality(100)/arc-anglerfish-arc2-prod-sltrib.s3.amazonaws.com/public/ZSSRJZWRQJETDMOJEDQEOQM2OI.jpg", "50")
+#plot(as.raster(dating.img))
 ```
 
 
@@ -75,6 +75,7 @@ speeddating %>%
   labs(x = "", y = "Número de participantes", fill = "Gênero") +
   scale_fill_discrete(labels = c('Feminino', 'Masculino'))
 ```
+
 Depois a idade:
 ```{r}
 speeddating %>%
@@ -85,6 +86,7 @@ speeddating %>%
   labs(x = "Idade", y = "Número de participantes", fill = "Gênero") +
   scale_fill_discrete(labels = c('Feminino', 'Masculino'))
 ```
+
 E a raça:
 ```{r}
 speeddating %>%
@@ -96,49 +98,48 @@ speeddating %>%
   scale_fill_discrete(labels = c('Black/African American', 'European/Caucasian American','Latino/Hispanic American','Asian/Pacific Islander/Asian American','Native American', 'Other'))
 ```
 
-Então, em maioria nossos dados falam sobre pessoas Caucasianas e jovens. Seria esse o perfil das pessoas criteriosas demais para achar alguém de forma fácil ou de alguém sem paciência para procurar pessoas?
+Então, em maioria nossos dados falam sobre pessoas caucasianas e jovens. Seria esse o perfil das pessoas criteriosas demais para achar alguém de forma fácil ou de alguém sem paciência para procurar pessoas?
 
-### Juntando os pontos
+### Será que é ele não?
 
-Quais variáveis parecem ter correlação para o sucesso?
+Estamos todos curiosos pra saber a fórmula do sucesso (aka modelo do match) e vamos colocar aqui nosso dedo na história. Dando uma olhada nos dados os atributos escolhidos e seus repectivos motivos:
+
+- __order__: será que os últimos serão os primeiros (a conseguir um date)?
+- __attr__: achar uma pessoa atraente é motivo forte para eu desejar ter um encontro depois?
+- __intel__: será que os nerds são fortes bons partidos?
+- __fun__: aquela velha história de que se você fizer alguém rir, você já tá mais perto de conquistá-la...
+
+
+Dando uma olhada na correlação o que nos interessa mesmo é a relação dos atributos com o `dec`que é o resultado final.
+```{r message = FALSE}
+speeddating.resume <- speeddating %>%
+  select(order, attr, intel, fun, dec)
+ggpairs(speeddating.resume)
+```
+
+Para o modelo do match (estatísticamente falando é o modelo de regressão) utilizaremos o modelo de regressão logística.
+
 ```{r}
-race = speeddating %>%
-  ggplot(aes(dec, race)) +
-  geom_violin(aes(fill = dec), alpha = 0.4) + 
-  geom_count() + coord_flip()
-
-int_corr = speeddating %>%
-  ggplot(aes(dec, int_corr)) +
-  geom_violin(aes(fill = dec), alpha = 0.4) + 
-  geom_count() + coord_flip()
-
-attr = speeddating %>%
-  ggplot(aes(dec, attr)) +
-  geom_violin(aes(fill = dec), alpha = 0.4) + 
-  geom_count() + coord_flip()
-
-sinc = speeddating %>%
-  ggplot(aes(dec, sinc)) +
-  geom_violin(aes(fill = dec), alpha = 0.4) + 
-  geom_count() + coord_flip()
-
+speeddating.model = glm(dec ~order + attr + intel + fun,
+                        data = speeddating.resume,
+                        family = "binomial")
 ```
 
 
-```{r}
-ggarrange(race, int_corr, attr, sinc)
-```
+### Partindo pro juntos e shallow now
 
-
-### Deu match?
+Modelo pronto, queremos saber quais dos atributos têm efeito expressivo na chance de ocorrer match? E como é esse efeito?
 
 ```{r}
-bm <- glm(dec ~ order + samerace + age + age_o + attr + fun + like + prob, 
-          data = speeddating, 
-          family = "binomial")
-tidy(bm, conf.int = TRUE)
-tidy(bm, conf.int = TRUE, exponentiate = TRUE)
-glance(bm)
-pR2(bm)
+tidy(speeddating.model, conf.int = TRUE, exponentiate = TRUE, conf.level = .95)
 ```
 
+Para os atributos escolhidos, a ordem da pessoa no encontro não teve um efeito expressivo. Na verdade, pelo intervalo de confiança de 95% a ordem pode está entre 0,9824 e 1,0065, sendo um efeito pequeno e negativo ou irrisório. Semelhante acontece com a inteligência que com IC de 95% está entre 0,8655 e 0,9665, o efeito pode ser considerado mínimo e negativo. Os atributos que se destacaram foram o senso de humor, que chega a acrescentar até 0,4584 na fórmula do match (o valor estimado é de 1,3881 com IC de 95%[1,322, 1,4584]) e a aparência que neste modelo é o que mais importa com estimativa de 1,7543 e IC de 95%[1,6696, 1,8453].
+
+Ou seja, ser bonito e engraçado conta mais que ser inteligente e o primeiro da fila. Mas ainda há esperanças para todos! 
+
+```{r}
+pR2(speeddating.model)
+```
+
+Avaliando o modelo com o R**2 de McFadden vemos que tudo que fizemos até agora explica apenas 26% dos nossos dados. Para quem se encaixa nos atributos, essa análise dá uma força na autoestima mas também temos boas notícias para os que não se sentiram agraciados.
