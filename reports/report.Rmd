@@ -1,0 +1,98 @@
+---
+title: "Regressão Romântica"
+author: "Dandara Sousa"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+```{r include=FALSE, warning=FALSE}
+library(GGally)
+library(pscl)
+library(broom)
+library(tidyverse)
+library(modelr) # devtools::install_github("hadley/modelr")
+
+library(magick)
+theme_set(theme_bw())
+```
+
+O _speed dating_ é um modelo de encontros muito conhecido nos Estados Unidos. Nele,um grande grupo se divide em pares onde cada par tem de 3 a 10 minutos para se conhecer. Após o término desse tempo os pares são rotacionados e tudo se repete. A ideia é que no final alguns casais se formem e passem para um encontro mais demorado (e sem competições). Parece ser tudo simples, não é mesmo? O que poderia dar errado?
+```{r}
+dating.img <- image_read("https://www.sltrib.com/resizer/IKzaM8Tui0iSyZXA07IGqGzDr6o=/970x0/filters:quality(100)/arc-anglerfish-arc2-prod-sltrib.s3.amazonaws.com/public/ZSSRJZWRQJETDMOJEDQEOQM2OI.jpg", "50")
+plot(as.raster(dating.img))
+```
+
+
+###Prazer, Speed Dating
+
+Nesse relatório temos dados de 5000 desses encontros coletados pelos professores da Columbia Business School. Os participantes tinham vários encontros de 4 minutos por noite. Após cada um, preenchiam fichas avaliando aqueles com quem se encontraram. Cada linha nos dados representa um desses encontros.
+```{r message = FALSE, warning = FALSE}
+speeddating <- read_csv("../data/speed-dating2.csv") %>% 
+  mutate(dec = as.factor(dec), 
+         gender = as.factor(gender))
+```
+
+Em resumo, nossas *colunas* são:
+
+- iid : id do participante p1 no encontro
+- gender : sexo do p1, 0 = mulher
+- order : dos vários encontros realizados em uma noite, esse foi o n-ésimo, segundo essa variável
+- pid : id do participante p2
+- int_corr : correlação entre os interesses de p1 e p2
+- samerace : p1 e p2 são da mesma raça?
+- age_o : idade de p2
+- age : idade de p1
+- field : campo de estudo de p1
+- race : raça de p1. O código é Black/African American=1; European/Caucasian-American=2; Latino/Hispanic American=3; Asian/Pacific Islander/Asian-American=4;	Native American=5; 	Other=6
+- from : de onde p1 é
+- career : que carreira p1 quer seguir
+- sports, tvsports, exercise, dining, museums, art, hiking, gaming, clubbing, reading, tv, theater, movies, concerts, music, shopping, yoga : De 1 a 10, quão interessado p1 é em cada uma dessas atividades.  
+- attr : quão atraente p1 achou p2
+- sinc : quão sincero p1 achou p2
+- intel : quão inteligente p1 achou p2    
+- fun : quão divertido p1 achou p2
+- amb : quão ambicioso p1 achou p2
+- shar : quanto p1 achou que compartilha interesses e hobbies com p2
+- like : no geral, quanto p1 gostou de p2?
+- prob : que probabiliade p1 acha que p2 tem de querer se encontrar novamente com p- (escala 1-10)
+- attr3_s : quanto p1 acha que é atraente
+- sinc3_s : quanto p1 acha que é sincero
+- intel3_s : quanto p1 acha que é inteligente
+- fun3_s : quanto p1 acha que é divertido
+- amb3_s : quanto p1 acha que é ambicioso
+
+### Ah! Me fala sobre você...
+Num passeio rápido vamos conhecer melhor o que temos. Primeiro, sobre o gênero dos participantes:
+```{r}
+speeddating %>%
+  group_by(gender) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = "", y = n, fill = gender)) +
+  geom_bar(stat = "identity") + coord_polar("y", start=0) +
+  labs(x = "", y = "Número de participantes", fill = "Gênero") +
+  scale_fill_discrete(labels = c('Feminino', 'Masculino'))
+```
+Depois a idade:
+```{r}
+speeddating %>%
+  group_by(gender, age) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = age, y = n, fill = gender)) +
+  geom_bar(stat = "identity") + 
+  labs(x = "Idade", y = "Número de participantes", fill = "Gênero") +
+  scale_fill_discrete(labels = c('Feminino', 'Masculino'))
+```
+E a raça:
+```{r}
+speeddating %>%
+  group_by(race) %>%
+  summarise(n = n()) %>%
+  ggplot(aes(x = "", y = n, fill = as.factor(race))) +
+  geom_bar(stat = "identity") + coord_polar("y", start=0) +
+  labs(x = "", y = "Número de participantes", fill = "Raça") +
+  scale_fill_discrete(labels = c('Black/African American', 'European/Caucasian American','Latino/Hispanic American','Asian/Pacific Islander/Asian American','Native American', 'Other'))
+```
+
+Então, em maioria nossos dados falam sobre pessoas Caucasianas e jovens. Seria esse o perfil das pessoas criteriosas demais para achar alguém de forma fácil ou de alguém sem paciência para procurar pessoas?
+
