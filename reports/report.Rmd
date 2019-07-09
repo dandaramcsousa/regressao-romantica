@@ -70,14 +70,15 @@ Num passeio rápido vamos conhecer melhor o que temos. Primeiro, sobre o gênero
 speeddating %>%
   group_by(gender) %>%
   summarise(n = n()) %>%
-  ggplot(aes(x = "", y = n, fill = gender)) +
-  geom_bar(stat = "identity") + coord_polar("y", start=0) +
-  labs(x = "", y = "Número de participantes", fill = "Gênero") +
-  scale_fill_discrete(labels = c('Feminino', 'Masculino'))
+  ggplot(aes(x = gender, y = n)) +
+  geom_bar(stat = "identity") + 
+  labs(x = "", y = "Número de participantes") +
+  scale_x_discrete(labels = c('Feminino', 'Masculino'))
+
 ```
 
 Depois a idade:
-```{r}
+```{r message = FALSE, warning = FALSE}
 speeddating %>%
   group_by(gender, age) %>%
   summarise(n = n()) %>%
@@ -92,10 +93,11 @@ E a raça:
 speeddating %>%
   group_by(race) %>%
   summarise(n = n()) %>%
-  ggplot(aes(x = "", y = n, fill = as.factor(race))) +
-  geom_bar(stat = "identity") + coord_polar("y", start=0) +
-  labs(x = "", y = "Número de participantes", fill = "Raça") +
-  scale_fill_discrete(labels = c('Black/African American', 'European/Caucasian American','Latino/Hispanic American','Asian/Pacific Islander/Asian American','Native American', 'Other'))
+  na.omit() %>%
+  ggplot(aes(x = as.factor(race), y = n)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Raça", y = "Número de participantes") +
+  scale_x_discrete(labels = c('1' = 'African American', '2' = 'Caucasian American','3' ='Hispanic American','4' = 'Asian American','5' ='Native American', '6' = 'Other'))
 ```
 
 Então, em maioria nossos dados falam sobre pessoas caucasianas e jovens. Seria esse o perfil das pessoas criteriosas demais para achar alguém de forma fácil ou de alguém sem paciência para procurar pessoas?
