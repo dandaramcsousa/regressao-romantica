@@ -1,2 +1,0 @@
-"0","dating.img <- image_read(""https://www.sltrib.com/resizer/IKzaM8Tui0iSyZXA07IGqGzDr6o=/970x0/filters:quality(100)/arc-anglerfish-arc2-prod-sltrib.s3.amazonaws.com/public/ZSSRJZWRQJETDMOJEDQEOQM2OI.jpg"", ""50"")"
-"0","plot(as.raster(dating.img))"

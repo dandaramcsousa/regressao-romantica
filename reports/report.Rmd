@@ -14,6 +14,7 @@ library(tidyverse)
 library(modelr) # devtools::install_github("hadley/modelr")
 
 library(magick)
+library(ggpubr)
 theme_set(theme_bw())
 ```
 
@@ -61,6 +62,7 @@ Em resumo, nossas *colunas* são:
 - intel3_s : quanto p1 acha que é inteligente
 - fun3_s : quanto p1 acha que é divertido
 - amb3_s : quanto p1 acha que é ambicioso
+- dec: se houve um match
 
 ### Ah! Me fala sobre você...
 Num passeio rápido vamos conhecer melhor o que temos. Primeiro, sobre o gênero dos participantes:
@@ -96,3 +98,36 @@ speeddating %>%
 
 Então, em maioria nossos dados falam sobre pessoas Caucasianas e jovens. Seria esse o perfil das pessoas criteriosas demais para achar alguém de forma fácil ou de alguém sem paciência para procurar pessoas?
 
+### Juntando os pontos
+
+Quais variáveis parecem ter correlação para o sucesso?
+```{r}
+race = speeddating %>%
+  ggplot(aes(dec, race)) +
+  geom_violin(aes(fill = dec), alpha = 0.4) + 
+  geom_count() + coord_flip()
+
+int_corr = speeddating %>%
+  ggplot(aes(dec, int_corr)) +
+  geom_violin(aes(fill = dec), alpha = 0.4) + 
+  geom_count() + coord_flip()
+
+attr = speeddating %>%
+  ggplot(aes(dec, attr)) +
+  geom_violin(aes(fill = dec), alpha = 0.4) + 
+  geom_count() + coord_flip()
+
+sinc = speeddating %>%
+  ggplot(aes(dec, sinc)) +
+  geom_violin(aes(fill = dec), alpha = 0.4) + 
+  geom_count() + coord_flip()
+
+```
+
+
+```{r}
+ggarrange(race, int_corr, attr, sinc)
+```
+
+
+### Deu match?
