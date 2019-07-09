@@ -131,3 +131,14 @@ ggarrange(race, int_corr, attr, sinc)
 
 
 ### Deu match?
+
+```{r}
+bm <- glm(dec ~ order + samerace + age + age_o + attr + fun + like + prob, 
+          data = speeddating, 
+          family = "binomial")
+tidy(bm, conf.int = TRUE)
+tidy(bm, conf.int = TRUE, exponentiate = TRUE)
+glance(bm)
+pR2(bm)
+```
+
